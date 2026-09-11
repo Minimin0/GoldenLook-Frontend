@@ -10,26 +10,26 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # GoldenLook-Frontend Agents
 
-## Role
-Mobile-first Next.js frontend for Golden Look. It collects the missing-person photo and guardian-entered appearance sentence, shows Gemini-assisted results for user confirmation, and renders/share-links the final flyer UX.
+## 역할
+Golden Look의 모바일 중심 Next.js Frontend입니다. 실종자 사진과 보호자의 옷차림 설명 입력, Gemini 보조 결과 확인, 전단 결과 확인 및 공유 UX를 담당합니다.
 
-## Editable Areas
-Edit `app/`, `components/`, `lib/`, `public/`, and tests for frontend behavior only. Backend, Modal AI, Supabase service code, and integration evidence belong in the other repositories.
+## 수정 가능한 영역
+Frontend 동작은 `app/`, `components/`, `lib/`, `public/`, `tests/`에서만 수정합니다. Backend API, Modal AI, Supabase server code, Integration evidence는 각 담당 Repository에서 관리합니다.
 
-## Fixed Contracts
-Do not change without team lead approval: appearance shape, `known` / `none` / `unknown` meanings, the 20 color ids, six API paths, original-photo pairing, no face/body/pose generation, Gemini user confirmation, AI failure fallback, and private storage principle.
+## 수정 금지 계약
+팀장 승인 없이 변경하지 않습니다: appearance shape, `known` / `none` / `unknown` 의미, 20 color ids, API 6개 경로, 원본 사진 병기, 얼굴/몸/포즈 생성 금지, Gemini 사용자 확인, AI failure fallback, private storage 원칙.
 
-## Secrets
-Only `NEXT_PUBLIC_*` variables may appear here. Never add `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY`, `MODAL_API_KEY`, or `CRON_SECRET` to frontend code, env files, or browser bundles. Commit `.env.example`, never real `.env*`.
+## Secret 관리
+Frontend에는 `NEXT_PUBLIC_*` 변수만 둡니다. `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY`, `MODAL_API_KEY`, `CRON_SECRET`는 frontend code, env file, browser bundle에 들어가면 안 됩니다. `.env.example`만 커밋하고 실제 `.env*`는 커밋하지 않습니다.
 
-## Branch Strategy
-`main` is production-ready only. Work from `develop`; feature branches use `feat/*`, `fix/*`, `docs/*`, or `chore/*`.
+## 브랜치 전략
+`main`은 Production-ready 상태만 유지합니다. 기본 작업은 `develop`에서 시작하며, 브랜치는 `feat/*`, `fix/*`, `docs/*`, `chore/*` 형식을 사용합니다.
 
-## PR Principles
-Keep PRs scoped, document product-contract impact, and include screenshots for visible UI changes.
+## PR 원칙
+PR은 작게 유지하고 product contract 영향 여부를 적습니다. 화면 변경은 screenshot을 함께 남깁니다.
 
-## Tests
-Run `npm run lint` and `npm run build` before merge. Add the smallest useful test when logic becomes non-trivial.
+## 테스트 원칙
+Merge 전 `npm run lint`, `npm run build`를 실행합니다. 복잡한 로직이 생길 때만 가장 작은 유효 테스트를 추가합니다.
 
-## Architecture
-Do not invent login, voice, Firebase, Spring Boot, a fourth AI repo, or frontend-owned secrets. Integration contracts become the source of truth over time.
+## 아키텍처 원칙
+로그인, 음성, Firebase, Spring Boot, 4번째 AI Repository, frontend-owned secret을 임의로 추가하지 않습니다. Integration contract는 향후 source of truth가 될 수 있습니다.
