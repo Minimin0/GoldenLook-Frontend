@@ -1,0 +1,45 @@
+# 참고용 UI 시안
+
+머지 대상이 아닙니다. 필요한 부분만 골라 쓰세요. `main` 은 비워 두었습니다.
+
+Next.js 15 (App Router) + Tailwind CSS v4 기준이고, 기획서 v4.0 의 동결 항목을 화면 계약으로 옮겨 둔 상태입니다.
+
+## 가져가면 좋을 것
+
+| 파일 | 내용 |
+| --- | --- |
+| `src/app/globals.css` | 색 토큰. navy 기본, signal 레드는 긴급·전화 전용, alert 오렌지는 수색중 상태 전용입니다. 용도를 섞으면 신호가 묻힙니다 |
+| `src/lib/regions.ts` | 전국 시도·시군구 상수와 지역 표기 포맷 함수 |
+| `src/lib/colors.ts` | 20색 팔레트. 기획서 동결 항목이라 색을 추가하거나 자유 텍스트 입력을 만들면 안 됩니다 |
+| `src/lib/types.ts` | `PhotoMode`, `Appearance`, `MissingCase` 등 도메인 타입 |
+| UI 문구 전반 | 버튼 라벨, 안내문, 빈 상태 문구 |
+
+## 참고만 하고 새로 짜도 되는 것
+
+- `src/app/**/page.tsx` — 라우팅, 상태 관리, 유효성 검사
+- `src/components/**` — 컴포넌트 분리 방식은 자유입니다
+
+## 팀 합의가 필요한 변경
+
+`README.md` 8장에 정리돼 있습니다. 두 가지입니다.
+
+1. 목격 장소를 `place` 자유 텍스트에서 `region: { sido, sigungu }` + `placeDetail` 로 분리했습니다.
+   기획서 10장 데이터 모델과 달라서 백엔드 스키마에 영향이 갑니다.
+2. 브랜드 입력을 항상 열린 텍스트 칸에서 체크박스 토글로 바꿨습니다.
+   "없음", "모름" 같은 문자열이 AI 프롬프트로 넘어가는 것을 막기 위함입니다.
+
+## 동작하지 않는 부분
+
+- 데이터는 `src/lib/mock-data.ts` 의 synthetic 더미입니다. 연락처는 전부 `010-0000-xxxx` 입니다
+- 이미지 생성, 전단 발행, 삭제는 `setTimeout` 목업입니다
+- 로그인, Supabase, API 라우트는 들어 있지 않습니다
+
+## 실행
+
+```bash
+npm install
+npm run dev
+```
+
+카카오 공유는 `.env.local` 에 `NEXT_PUBLIC_KAKAO_JS_KEY` 를 넣으면 동작하고,
+없으면 기본 공유 시트 → 링크 복사 순으로 대체됩니다.
