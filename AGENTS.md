@@ -2,34 +2,53 @@
 
 # This is NOT the Next.js you know
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
-
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+This version may contain APIs and conventions newer than model training data. Before changing framework behavior, inspect the relevant guide under `node_modules/next/dist/docs/` and follow deprecation notices.
 
 <!-- END:nextjs-agent-rules -->
 
-# GoldenLook-Frontend Agents
+# GoldenLook-Frontend Agents - v4.0
 
 ## 역할
-Golden Look의 모바일 중심 Next.js Frontend입니다. 실종자 사진과 보호자의 옷차림 설명 입력, Gemini 보조 결과 확인, 전단 결과 확인 및 공유 UX를 담당합니다.
+Golden Look의 모바일 중심 Frontend입니다. 로그인, 사진 업로드, 사진 유형 선택, 옷 정보 선택, AI 생성 결과 확인/재생성, 전단 발행·공유, 내 전단 관리를 담당합니다.
 
-## 수정 가능한 영역
-Frontend 동작은 `app/`, `components/`, `lib/`, `public/`, `tests/`에서만 수정합니다. Backend API, Modal AI, Supabase server code, Integration evidence는 각 담당 Repository에서 관리합니다.
+## v4 핵심 흐름
 
-## 수정 금지 계약
-팀장 승인 없이 변경하지 않습니다: appearance shape, `known` / `none` / `unknown` 의미, 20 color ids, API 6개 경로, 원본 사진 병기, 얼굴/몸/포즈 생성 금지, Gemini 사용자 확인, AI failure fallback, private storage 원칙.
+- `얼굴만 나온 사진인가요?` 미체크 → `body_visible`: 기존 몸 사진의 옷 색/형태 편집
+- 체크 → `face_only`: 얼굴 사진 + 나이/키/성별/체형 + 옷 정보로 예상 몸 생성
+- 옷 색은 20색 팔레트 직접 선택
+- Gemini 자연어 parsing은 사용하지 않음
+- 결과 문구: `AI로 재현한 예상 모습`
+- 재생성 최대 3회
 
-## Secret 관리
-Frontend에는 `NEXT_PUBLIC_*` 변수만 둡니다. `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY`, `MODAL_API_KEY`, `CRON_SECRET`는 frontend code, env file, browser bundle에 들어가면 안 됩니다. `.env.example`만 커밋하고 실제 `.env*`는 커밋하지 않습니다.
+## 수정 가능 영역
+`app/`, `components/`, `lib/`, `public/`, `tests/`.
 
-## 브랜치 전략
-`main`은 Production-ready 상태만 유지합니다. 기본 작업은 `develop`에서 시작하며, 브랜치는 `feat/*`, `fix/*`, `docs/*`, `chore/*` 형식을 사용합니다.
+## 최소 계약
+팀 간 통합을 위해 아래만 임의 변경하지 않습니다.
 
-## PR 원칙
-PR은 작게 유지하고 product contract 영향 여부를 적습니다. 화면 변경은 screenshot을 함께 남깁니다.
+- `photoMode`: `body_visible | face_only`
+- 20색 color id
+- unknown 정보를 사실처럼 확정하지 않는 원칙
+- generate 결과를 표시할 수 있는 API contract
+- 재생성 최대 3회
+- 결과 라벨 `AI로 재현한 예상 모습`
+- 로그인/소유권
+- 112/182 미구현
+- 작성자 삭제
 
-## 테스트 원칙
-Merge 전 `npm run lint`, `npm run build`를 실행합니다. 복잡한 로직이 생길 때만 가장 작은 유효 테스트를 추가합니다.
+## AI 팀 변경 대응
+AI 담당자는 Backend 내부 provider/model/prompt/pipeline을 자유롭게 변경할 수 있습니다. Frontend는 provider 구현에 의존하지 말고 앱-facing generate DTO만 사용합니다.
 
-## 아키텍처 원칙
-로그인, 음성, Firebase, Spring Boot, 4번째 AI Repository, frontend-owned secret을 임의로 추가하지 않습니다. Integration contract는 향후 source of truth가 될 수 있습니다.
+AI 팀이 Frontend 입력 또는 API DTO 변경을 보고하면 해당 PR에서 contract 영향도를 확인한 뒤 조정합니다.
+
+## Secret
+Frontend에는 public client 설정만 둡니다. Service Role, Gemini API key, server secret은 브라우저 bundle에 들어가면 안 됩니다.
+
+## 브랜치/PR
+- `main`: Production-ready
+- 작업 브랜치: `feat/*`, `fix/*`, `docs/*`, `chore/*`
+- 화면 PR은 screenshot/evidence 포함
+- contract 변경이면 Integration 영향을 명시
+
+## 검증
+Merge 전 최소 `npm run lint`, `npm run build`.
