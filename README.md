@@ -48,6 +48,7 @@ Backend `.env` 의 `CORS_ALLOWED_ORIGINS` 에 Frontend origin을 정확히 등�
 | 경로 | 로그인 | 내용 |
 |---|---|---|
 | `/` | 불필요 | 랜딩, 초기 대응 안내, 두 사진 모드 설명 |
+| `/demo` | 불필요 | synthetic 30초 체험 (예시 전단, Backend 호출 없음) |
 | `/login` | - | Email/Password 로그인·회원가입 |
 | `/create` | 필요 | 4단계 작성 위저드 (`?case=<id>` 로 이어서 작성) |
 | `/my` | 필요 | 내 전단 목록, 공유, 삭제 |
@@ -121,6 +122,8 @@ Frontend는 Gemini 모델명이나 provider 구현을 알 필요가 없습니다
 - 112/182 없음: 신고 버튼도, 경찰 시스템처럼 보이는 요소도 없습니다.
 - noindex: `app/layout.tsx`와 공개 전단의 `generateMetadata` 양쪽에서 설정합니다.
 - 작성자 삭제: `/my`에서 확인 다이얼로그 후 `DELETE`.
+- synthetic demo: `/demo`는 `lib/demo.ts`의 합성 값만 씁니다. 인물은 사진이 아니라 일러스트(`public/demo-figure.svg`)이고 연락처는 더미 `010-0000-0000` 한 개이며 전화 링크를 걸지 않습니다.
+- 날짜 표기: `Intl` 을 쓰지 않고 KST 고정으로 직접 포맷합니다. 실행 환경 ICU 차이로 서버와 브라우저 출력이 갈리면 hydration 오류가 납니다.
 
 ## MVP 제외
 

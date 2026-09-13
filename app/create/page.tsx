@@ -312,30 +312,38 @@ function CreateWizard() {
     }
   };
 
-  const canGoNext = (() => {
+  /**
+   * 다음/발행 버튼이 막힌 이유를 화면에 그대로 보여 주기 위한 목록.
+   * 버튼만 비활성화하면 사용자는 무엇이 빠졌는지 알 수 없다.
+   */
+  const blockers = (() => {
+    const missing: string[] = [];
     if (step === 0) {
       // 서버에 저장된 사진이든 방금 고른 사진이든, 보이는 사진이 있어야 넘어간다.
-      if (!previewUrl) return false;
-      if (photoMode !== "face_only") return true;
-      return (
-        inRange(form.age, 1, 120) &&
-        inRange(form.heightCm, 40, 230) &&
-        Boolean(body.gender) &&
-        Boolean(body.bodyType)
-      );
+      if (!previewUrl) missing.push("실종자 사진");
+      if (photoMode === "face_only") {
+        if (!inRange(form.age, 1, 120)) missing.push("나이");
+        if (!inRange(form.heightCm, 40, 230)) missing.push("키");
+        if (!body.gender) missing.push("성별");
+        if (!body.bodyType) missing.push("체형");
+      }
+      return missing;
     }
-    if (step === 1) return true;
-    if (step === 2) return Boolean(caseData?.generatedUrl);
-    return (
-      form.name.trim() !== "" &&
-      inRange(form.age, 1, 120) &&
-      form.missingAt !== "" &&
-      form.sido !== "" &&
-      (!hasSigungu(form.sido) || form.sigungu !== "") &&
-      isValidContact(form.contact) &&
-      consent
-    );
+    if (step === 1) return missing;
+    if (step === 2) {
+      if (!caseData?.generatedUrl) missing.push("예상 모습 만들기");
+      return missing;
+    }
+    if (!form.name.trim()) missing.push("이름");
+    if (!inRange(form.age, 1, 120)) missing.push("나이");
+    if (!form.missingAt) missing.push("마지막으로 확인된 시각");
+    if (!form.sido || (hasSigungu(form.sido) && !form.sigungu)) missing.push("마지막 목격 지역");
+    if (!isValidContact(form.contact)) missing.push("보호자 연락처");
+    if (!consent) missing.push("연락처 공개 확인");
+    return missing;
   })();
+
+  const canGoNext = blockers.length === 0;
 
   const goNext = async () => {
     setError(null);
@@ -450,6 +458,15 @@ function CreateWizard() {
       </main>
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 backdrop-blur">
+        {blockers.length > 0 && (
+          <p
+            className="mx-auto w-full max-w-[480px] px-5 pt-2.5 text-[13px] font-semibold leading-snug text-navy-600"
+            aria-live="polite"
+          >
+            {blockers.join(", ")}
+            {step === 3 ? " 을(를) 채우면 발행할 수 있습니다." : " 이(가) 필요합니다."}
+          </p>
+        )}
         <div className="mx-auto flex w-full max-w-[480px] gap-2 px-5 pb-[max(12px,env(safe-area-inset-bottom))] pt-3">
           {step > 0 && (
             <Button disabled={busy || publishing} onClick={() => setStep((s) => s - 1)} size="lg" variant="outline">

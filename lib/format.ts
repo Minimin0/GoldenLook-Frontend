@@ -1,41 +1,55 @@
 /**
- * 서버(UTC)와 브라우저(KST)가 다른 문자열을 만들어 hydration 오류가 나는 것을 막기 위해
- * 날짜 표기는 항상 Asia/Seoul 기준으로 고정한다.
+ * 날짜 표기는 Intl 을 쓰지 않고 직접 만든다.
+ *
+ * `Intl.DateTimeFormat("ko-KR")` 은 실행 환경의 ICU 데이터에 따라 결과가 달라진다.
+ * (Node 는 `AM`, 브라우저는 `오전` 을 내놓는 경우가 있어 hydration 오류가 난다)
+ * 한국 대상 서비스이므로 KST 고정 + 한국어 고정으로 직접 포맷한다.
  */
-const FULL_DATE = new Intl.DateTimeFormat("ko-KR", {
-  timeZone: "Asia/Seoul",
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-  weekday: "short",
-  hour: "numeric",
-  minute: "2-digit",
-});
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
-const SHORT_DATE = new Intl.DateTimeFormat("ko-KR", {
-  timeZone: "Asia/Seoul",
-  month: "long",
-  day: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
-});
+/** `2026-09-13T10:20` 처럼 시간대가 없는 값 (datetime-local 입력값) */
+const NAIVE_DATETIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/;
 
+/**
+ * 시간대가 없는 문자열을 `new Date()` 에 그대로 넘기면 실행 환경의 로컬 시간으로 읽는다.
+ * 서버(UTC)와 브라우저(KST)가 다른 시각을 만들므로, 시간대가 없으면 KST 로 고정해서 읽는다.
+ */
 function toDate(value?: string | null) {
   if (!value) return null;
-  const date = new Date(value);
+  const date = new Date(NAIVE_DATETIME.test(value.trim()) ? `${value.trim()}+09:00` : value);
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-/** 2026년 9월 12일 (토) 오후 2:40 — 파싱 불가한 값은 입력 그대로 보여 준다. */
-export function formatDateTime(value?: string | null) {
-  const date = toDate(value);
-  return date ? FULL_DATE.format(date) : value?.trim() || "";
+/** KST 기준 날짜 조각. UTC getter 만 써서 실행 환경에 영향받지 않는다. */
+function kstParts(date: Date) {
+  const shifted = new Date(date.getTime() + KST_OFFSET_MS);
+  const hour24 = shifted.getUTCHours();
+  return {
+    year: shifted.getUTCFullYear(),
+    month: shifted.getUTCMonth() + 1,
+    day: shifted.getUTCDate(),
+    weekday: WEEKDAYS[shifted.getUTCDay()],
+    meridiem: hour24 < 12 ? "오전" : "오후",
+    hour: hour24 % 12 === 0 ? 12 : hour24 % 12,
+    minute: String(shifted.getUTCMinutes()).padStart(2, "0"),
+  };
 }
 
-/** 9월 12일 오후 2:40 (목록용 축약형) */
+/** 2026년 9월 13일 (일) 오전 10:20 — 파싱 불가한 값은 입력 그대로 보여 준다. */
+export function formatDateTime(value?: string | null) {
+  const date = toDate(value);
+  if (!date) return value?.trim() || "";
+  const { year, month, day, weekday, meridiem, hour, minute } = kstParts(date);
+  return `${year}년 ${month}월 ${day}일 (${weekday}) ${meridiem} ${hour}:${minute}`;
+}
+
+/** 9월 13일 오전 10:20 (목록용 축약형) */
 export function formatShortDateTime(value?: string | null) {
   const date = toDate(value);
-  return date ? SHORT_DATE.format(date) : value?.trim() || "";
+  if (!date) return value?.trim() || "";
+  const { month, day, meridiem, hour, minute } = kstParts(date);
+  return `${month}월 ${day}일 ${meridiem} ${hour}:${minute}`;
 }
 
 /** "3시간 12분" — 경과 시간 */

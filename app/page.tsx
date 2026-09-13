@@ -52,9 +52,16 @@ export default function HomePage() {
               전단 즉시 작성하기
               <ArrowRight size={19} />
             </ButtonLink>
+            {/* 기획서 3장 플로우의 `synthetic 30초 체험`. 로그인 없이 열린다. */}
+            <Link
+              href="/demo"
+              className="flex h-12 items-center justify-center rounded-2xl bg-white/70 text-[15px] font-semibold text-navy-700 hover:bg-white"
+            >
+              30초 만에 예시 전단 둘러보기
+            </Link>
             <Link
               href={session ? "/my" : "/login"}
-              className="flex h-12 items-center justify-center rounded-2xl bg-white/70 text-[15px] font-semibold text-navy-700 hover:bg-white"
+              className="text-center text-[14px] font-semibold text-navy-600 underline underline-offset-4"
             >
               {session ? "내가 만든 전단 보기" : "로그인 / 회원가입"}
             </Link>

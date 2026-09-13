@@ -30,6 +30,7 @@ Golden Look의 모바일 중심 Frontend입니다. 로그인, 사진 업로드, 
 | 경로 | 로그인 | 내용 |
 |---|---|---|
 | `/` | 불필요 | 랜딩 |
+| `/demo` | 불필요 | synthetic 30초 체험 |
 | `/login` | - | Email/Password 로그인·회원가입 |
 | `/create` | 필요 | 4단계 위저드 (`?case=<id>` 로 이어서 작성) |
 | `/my` | 필요 | 내 전단 목록 / 공유 / 삭제 |
@@ -50,6 +51,10 @@ Golden Look의 모바일 중심 Frontend입니다. 로그인, 사진 업로드, 
 - **발행 후에는 삭제만 가능합니다** (`CASE_PUBLISHED`).
 - 20색은 `lib/generated/colors.json` 한 곳에서만 옵니다. 여기에 색을 추가하면 Backend가 `INVALID_INPUT` 으로 거절합니다.
 - 목격 장소는 화면에서 시도·시군구로 받고 `composePlace()` 로 계약의 `place` 한 칸에 합칩니다.
+- 날짜는 `Intl.DateTimeFormat` 대신 `lib/format.ts` 의 KST 고정 포맷터를 씁니다.
+  Node 와 브라우저의 ICU 데이터가 달라 `AM` / `오전` 처럼 갈리면 hydration 오류가 납니다.
+- 버튼을 비활성화할 때는 이유를 함께 보여 줍니다. 위저드는 `blockers` 목록을 버튼 위에 출력합니다.
+- `/demo` 는 합성 데이터 전용입니다. 실제 인물 사진이나 실제 연락처를 넣지 않습니다.
 
 UI 시안(`reference/design-ui`) 반영 내역과 팀 확인 대기 항목은 `docs/UI_BASELINE_REVIEW.md` 에 있습니다.
 
