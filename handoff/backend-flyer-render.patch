@@ -1,0 +1,90 @@
+diff --git a/app/api/flyer/[shareId]/route.ts b/app/api/flyer/[shareId]/route.ts
+index 10db0c5..1f3c2da 100644
+--- a/app/api/flyer/[shareId]/route.ts
++++ b/app/api/flyer/[shareId]/route.ts
+@@ -2,7 +2,7 @@ import { createElement as h } from "react";
+ import { ImageResponse } from "next/og";
+ import { AI_RESULT_LABEL, CASE_BUCKET } from "@/lib/contracts";
+ import { ApiError, fail, preflight, withCors } from "@/lib/server/http";
+-import { clothingLines } from "@/lib/server/ai/prompt";
++import { flyerClothingLines } from "@/lib/server/flyer";
+ import { CaseRow } from "@/lib/server/cases";
+ import { supabaseAdmin } from "@/lib/server/supabase";
+ 
+@@ -25,17 +25,35 @@ export async function GET(_req: Request, ctx: { params: Promise<{ shareId: strin
+       ["마지막 장소", flyer.place],
+       ["연락처", flyer.contact],
+     ].filter(([, value]) => value);
+-    const clothing = clothingLines(flyer.appearance ?? { top: { status: "unknown" }, bottom: { status: "unknown" }, hat: { status: "unknown" }, shoes: { status: "unknown" }, items: [] });
++    const clothing = flyerClothingLines(flyer.appearance ?? { top: { status: "unknown" }, bottom: { status: "unknown" }, hat: { status: "unknown" }, shoes: { status: "unknown" }, items: [] });
+ 
+     return withCors(_req, new ImageResponse(
+       h("div", { style: { width: "100%", height: "100%", display: "flex", background: "#fff8ec", color: "#231f20", fontFamily: "sans-serif", padding: 48, gap: 32 } },
+-        h("img", { src, style: { width: 520, height: 804, objectFit: "cover", borderRadius: 12 } }),
+-        h("div", { style: { display: "flex", flexDirection: "column", flex: 1, gap: 18 } },
+-          h("div", { style: { fontSize: 60, fontWeight: 800 } }, "실종자를 찾습니다"),
+-          h("div", { style: { fontSize: 28, color: "#8a3b12" } }, AI_RESULT_LABEL),
++        h("img", { src, style: { width: 480, height: 804, objectFit: "cover", borderRadius: 12 } }),
++        h("div", { style: { display: "flex", flexDirection: "column", flex: 1, gap: 14 } },
++          h("div", { style: { fontSize: 58, fontWeight: 800 } }, "실종자를 찾습니다"),
++          h("div", { style: { fontSize: 26, color: "#8a3b12" } }, AI_RESULT_LABEL),
+           ...facts.map(([label, value]) => h("div", { style: { fontSize: 30 } }, `${label}: ${value}`)),
+-          clothing.length ? h("div", { style: { fontSize: 24, lineHeight: 1.35 } }, `착의: ${clothing.join(" ")}`) : null,
+-          flyer.notes ? h("div", { style: { fontSize: 24, lineHeight: 1.35 } }, flyer.notes) : null,
++          // 지나가던 사람이 대조하는 건 얼굴보다 옷이다. 제목 다음으로 크게 그린다.
++          clothing.length
++            ? h("div", {
++                style: {
++                  display: "flex", flexDirection: "column", gap: 8, padding: 20,
++                  border: "3px solid #0e2546", borderRadius: 16, background: "#ffffff",
++                },
++              },
++                h("div", { style: { fontSize: 26, fontWeight: 800, color: "#0e2546" } }, "실종 당시 착장"),
++                ...clothing.map((line) =>
++                  h("div", { style: { fontSize: 32, fontWeight: 700, color: "#0e2546" } }, line)),
++              )
++            : null,
++          // 라벨 없이 본문만 찍으면 보호자가 "없음" 이라고 적었을 때 무엇이 없는지 알 수 없다.
++          flyer.notes
++            ? h("div", { style: { display: "flex", flexDirection: "column", gap: 4 } },
++                h("div", { style: { fontSize: 22, color: "#5a6b85" } }, "특이사항"),
++                h("div", { style: { fontSize: 28, fontWeight: 700, color: "#c82a1e", lineHeight: 1.3 } }, flyer.notes),
++              )
++            : null,
+         ),
+       ),
+       { width: 1200, height: 900, headers: { "Cache-Control": "private, no-store" } },
+diff --git a/lib/server/flyer.ts b/lib/server/flyer.ts
+new file mode 100644
+index 0000000..82905c6
+--- /dev/null
++++ b/lib/server/flyer.ts
+@@ -0,0 +1,28 @@
++import { Appearance, colorName } from "@/lib/contracts";
++
++/**
++ * 공개 전단에 찍을 착장 문구.
++ *
++ * `lib/server/ai/prompt.ts` 의 `clothingLines()` 는 Gemini 프롬프트용이라
++ * `top: 흰색, 니트.` / `hat: confirmed none.` 처럼 영어 키를 쓴다.
++ * 그대로 전단에 찍으면 보호자와 시민이 영어 필드명을 보게 되므로 전단용을 따로 둔다.
++ */
++const PART_LABEL = { top: "상의", bottom: "하의", hat: "모자", shoes: "신발" } as const;
++
++export function flyerClothingLines(appearance: Appearance) {
++  const garments = (["top", "bottom", "hat", "shoes"] as const).flatMap((key) => {
++    const part = appearance[key];
++    if (part.status === "none") return [`${PART_LABEL[key]}: 착용 안 함`];
++    if (part.status === "unknown") return [];
++    // 브랜드는 색·종류와 성격이 달라서 붙여 쓰면 "검정 패딩 나이키" 처럼 옷 이름의 일부로 읽힌다.
++    const described = [colorName(part.color), part.type].filter(Boolean).join(" ");
++    if (!described) return [];
++    return [`${PART_LABEL[key]}: ${described}${part.brand ? ` (${part.brand})` : ""}`];
++  });
++
++  const items = appearance.items.map(
++    (item) => `소지품: ${[colorName(item.color), item.type].filter(Boolean).join(" ")}`,
++  );
++
++  return [...garments, ...items];
++}
