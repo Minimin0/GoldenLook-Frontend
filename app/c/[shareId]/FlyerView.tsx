@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, FileText, FileX2, House, Loader2, Sparkles } from "lucide-react";
 import { BrandMark } from "@/components/layout/AppHeader";
 import { ShareBar } from "@/components/share/ShareActions";
+import { getFlyerMeta, type FlyerMeta } from "@/lib/api/cases";
 import { ButtonLink } from "@/components/ui/Button";
 import { AI_LABEL } from "@/components/flyer/AiPhoto";
-import { AUTO_DELETE_HOURS, buildShareUrl } from "@/lib/format";
+import { AUTO_DELETE_NOTICE, buildShareUrl } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
 /**
@@ -25,6 +26,18 @@ export function FlyerView({
   justCreated: boolean;
 }) {
   const [state, setState] = useState<"loading" | "ready" | "gone">("loading");
+  const [meta, setMeta] = useState<FlyerMeta | null>(null);
+
+  // 전화 버튼용 최소 공개 정보. Backend 가 아직 없으면 null 이라 버튼만 빠진다.
+  useEffect(() => {
+    let active = true;
+    getFlyerMeta(shareId).then((next) => {
+      if (active) setMeta(next);
+    });
+    return () => {
+      active = false;
+    };
+  }, [shareId]);
 
   if (state === "gone") {
     return (
@@ -34,7 +47,7 @@ export function FlyerView({
         </span>
         <h1 className="mt-5 text-xl font-extrabold text-ink">이미 내려간 전단입니다</h1>
         <p className="mt-2 text-[15px] leading-relaxed text-muted">
-          작성자가 삭제했거나, 등록 후 약 {AUTO_DELETE_HOURS}시간이 지나 자동으로 삭제되었습니다.
+          작성자가 삭제했거나, 자동 삭제 기간({AUTO_DELETE_NOTICE})이 지났습니다.
           <br />
           링크를 다시 확인해 주세요.
         </p>
@@ -102,9 +115,8 @@ export function FlyerView({
             촬영 사진이 아닙니다. 실제 모습과 다를 수 있으니 옷차림과 인상착의를 함께 확인해 주세요.
           </p>
           <p className="mt-2 text-[13px] leading-relaxed text-muted">
-            보신 적이 있다면 전단에 적힌 보호자 연락처로 시간과 장소를 함께 전해 주세요. 이 페이지는
-            검색엔진에 노출되지 않고, 등록 후 약 {AUTO_DELETE_HOURS}시간이 지나면 자동으로
-            삭제됩니다.
+            보신 적이 있다면 아래 전화 버튼으로 보호자에게 시간과 장소를 함께 전해 주세요. 이 페이지는
+            검색엔진에 노출되지 않습니다. 생성된 데이터는 {AUTO_DELETE_NOTICE} 자동 삭제됩니다.
           </p>
 
           <div className="mt-5 flex flex-col items-center gap-2">
@@ -127,10 +139,11 @@ export function FlyerView({
       </main>
 
       <ShareBar
-        description="보신 분은 전단에 적힌 보호자 연락처로 연락 부탁드립니다."
+        contact={meta?.contact}
+        description="보신 분은 보호자에게 연락 부탁드립니다."
         imageUrl={imageUrl}
         shareUrl={buildShareUrl(shareId)}
-        title="실종자를 찾고 있습니다"
+        title={meta?.name ? `${meta.name}님을 찾고 있습니다` : "실종자를 찾고 있습니다"}
       />
     </>
   );

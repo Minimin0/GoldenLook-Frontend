@@ -6,7 +6,7 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { ButtonLink } from "@/components/ui/Button";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { AUTO_DELETE_HOURS } from "@/lib/format";
+import { AUTO_DELETE_NOTICE } from "@/lib/format";
 
 const FIRST_STEPS = [
   {
@@ -122,8 +122,8 @@ export default function HomePage() {
                 실제 촬영 사진이 아닙니다.
               </p>
               <p className="mt-1.5">
-                전단은 검색엔진에 노출되지 않고, 등록 후 약 {AUTO_DELETE_HOURS}시간이 지나면 자동으로
-                삭제됩니다. 작성자는 언제든 직접 삭제할 수 있습니다.
+                전단은 검색엔진에 노출되지 않습니다. 생성된 데이터는 {AUTO_DELETE_NOTICE} 자동
+                삭제되며, 작성자는 언제든 직접 삭제할 수 있습니다.
               </p>
             </div>
           </div>

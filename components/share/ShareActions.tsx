@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Check, ImageDown, Link2, MessageCircle } from "lucide-react";
+import { Check, ImageDown, Link2, MessageCircle, Phone } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { formatPhone } from "@/lib/format";
 
 declare global {
   interface Window {
@@ -69,15 +70,33 @@ export function useShare({ shareUrl, title, description, imageUrl }: ShareTarget
   return { copied, copyLink, shareToKakao };
 }
 
-/** 공개 전단 하단에 고정되는 공유 바 */
-export function ShareBar(props: ShareTarget & { className?: string }) {
+/**
+ * 공개 전단 하단에 고정되는 공유 바.
+ *
+ * 연락처를 알 수 있으면 전화 버튼을 가장 크게 맨 위에 둔다. 전단을 본 시민이
+ * 해야 할 행동은 공유가 아니라 보호자에게 연락하는 것이다. (팀 결정사항 ①)
+ */
+export function ShareBar(props: ShareTarget & { className?: string; contact?: string | null }) {
   const { copied, copyLink, shareToKakao } = useShare(props);
+  const digits = props.contact?.replace(/\D/g, "") ?? "";
 
   return (
     <div
       className={cn("app-bar border-t border-line bg-white/95 backdrop-blur", props.className)}
     >
       <div className="px-4 pb-[max(12px,env(safe-area-inset-bottom))] pt-3">
+        {digits.length >= 7 && (
+          <a
+            className="mb-2 flex h-14 items-center justify-center gap-2 rounded-2xl bg-signal-500 text-base font-bold text-white hover:bg-signal-600"
+            href={`tel:${digits}`}
+          >
+            <Phone size={20} />
+            보호자에게 전화하기
+            <span className="tabular text-[15px] font-semibold opacity-90">
+              {formatPhone(props.contact ?? "")}
+            </span>
+          </a>
+        )}
         <div className="flex gap-2">
           <button
             type="button"

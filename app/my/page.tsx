@@ -10,7 +10,7 @@ import { Button, ButtonLink } from "@/components/ui/Button";
 import { ErrorText } from "@/components/ui/Field";
 import { deleteCase, listCases } from "@/lib/api/cases";
 import { errorMessage } from "@/lib/api/client";
-import { AUTO_DELETE_HOURS } from "@/lib/format";
+import { AUTO_DELETE_NOTICE } from "@/lib/format";
 import type { CaseListItem } from "@/lib/schemas";
 
 function MyFlyers() {
@@ -68,8 +68,8 @@ function MyFlyers() {
       <main className="nav-safe-area px-5 pt-2">
         <h1 className="text-[22px] font-extrabold tracking-tight text-ink">내 전단</h1>
         <p className="mt-1 text-[14px] leading-relaxed text-muted">
-          내가 만든 전단만 보입니다. 등록 후 약 {AUTO_DELETE_HOURS}시간이 지나면 자동으로 삭제되고,
-          언제든 직접 삭제할 수 있습니다.
+          내가 만든 전단만 보입니다. 생성된 데이터는 {AUTO_DELETE_NOTICE} 자동 삭제되며, 언제든 직접
+          삭제할 수 있습니다.
         </p>
 
         <div className="mt-3">

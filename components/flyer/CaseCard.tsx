@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Clock3, Eye, PencilLine, Trash2 } from "lucide-react";
+import { Eye, PencilLine, Trash2 } from "lucide-react";
 import { AiThumb } from "@/components/flyer/AiPhoto";
 import { CaseStatusBadge } from "@/components/ui/StatusBadge";
 import { ShareInline } from "@/components/share/ShareActions";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { flyerImageUrl } from "@/lib/api/cases";
-import { buildShareUrl, formatShortDateTime, hoursUntilAutoDelete } from "@/lib/format";
+import { buildShareUrl, formatShortDateTime } from "@/lib/format";
 import type { CaseListItem } from "@/lib/schemas";
 
 export function CaseCard({
@@ -21,8 +21,6 @@ export function CaseCard({
   onExpiredThumb: () => void;
   deleting: boolean;
 }) {
-  const remaining = hoursUntilAutoDelete(item.createdAt);
-
   return (
     <li className="rounded-2xl border border-line bg-white p-4">
       <div className="flex gap-3.5">
@@ -40,11 +38,6 @@ export function CaseCard({
 
           <p className="mt-1.5 text-[18px] font-extrabold leading-tight text-ink">
             {item.name ?? "이름 미입력"}
-          </p>
-
-          <p className="mt-1 flex items-center gap-1 text-[12px] text-muted">
-            <Clock3 size={13} />
-            {remaining > 0 ? `자동 삭제까지 약 ${remaining}시간` : "곧 자동 삭제됩니다"}
           </p>
 
           <p className="mt-1 text-[12px] text-muted">

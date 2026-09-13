@@ -6,7 +6,6 @@
  * 한국 대상 서비스이므로 KST 고정 + 한국어 고정으로 직접 포맷한다.
  */
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
-const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
 /** `2026-09-13T10:20` 처럼 시간대가 없는 값 (datetime-local 입력값) */
 const NAIVE_DATETIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/;
@@ -29,27 +28,30 @@ function kstParts(date: Date) {
     year: shifted.getUTCFullYear(),
     month: shifted.getUTCMonth() + 1,
     day: shifted.getUTCDate(),
-    weekday: WEEKDAYS[shifted.getUTCDay()],
     meridiem: hour24 < 12 ? "오전" : "오후",
     hour: hour24 % 12 === 0 ? 12 : hour24 % 12,
     minute: String(shifted.getUTCMinutes()).padStart(2, "0"),
   };
 }
 
-/** 2026년 9월 13일 (일) 오전 10:20 — 파싱 불가한 값은 입력 그대로 보여 준다. */
+/**
+ * 2026년 9월 13일 오후 3시 30분 — 파싱 불가한 값은 입력 그대로 보여 준다.
+ * Backend `lib/server/flyer.ts` 의 `flyerDateTime()` 과 같은 형식이어야
+ * 전단 PNG 와 화면 문구가 어긋나지 않는다.
+ */
 export function formatDateTime(value?: string | null) {
   const date = toDate(value);
   if (!date) return value?.trim() || "";
-  const { year, month, day, weekday, meridiem, hour, minute } = kstParts(date);
-  return `${year}년 ${month}월 ${day}일 (${weekday}) ${meridiem} ${hour}:${minute}`;
+  const { year, month, day, meridiem, hour, minute } = kstParts(date);
+  return `${year}년 ${month}월 ${day}일 ${meridiem} ${hour}시 ${minute}분`;
 }
 
-/** 9월 13일 오전 10:20 (목록용 축약형) */
+/** 9월 13일 오후 3시 30분 (목록용 축약형) */
 export function formatShortDateTime(value?: string | null) {
   const date = toDate(value);
   if (!date) return value?.trim() || "";
   const { month, day, meridiem, hour, minute } = kstParts(date);
-  return `${month}월 ${day}일 ${meridiem} ${hour}:${minute}`;
+  return `${month}월 ${day}일 ${meridiem} ${hour}시 ${minute}분`;
 }
 
 /** "3시간 12분" — 경과 시간 */
@@ -73,18 +75,13 @@ export function isGoldenHour(from: string, now: number = Date.now()) {
 }
 
 /**
- * 자동 삭제까지 남은 시간.
- * Backend 의 cleanup cron 은 생성 24시간이 지난 case 를 지운다.
- * (기획서 2.1 의 "최대 48시간" 정책 안쪽 값이다)
+ * 자동 삭제 안내 문구.
+ *
+ * Backend 는 생성 24시간이 지난 case 를 지우지만 cron 이 하루 한 번 돌기 때문에
+ * 실제 삭제 시점은 24~48시간 사이다. "24시간 후 정확히 삭제" 로 쓰면 안 되고,
+ * 남은 시간을 시 단위로 세어 보여 주는 것도 같은 이유로 금지다. (팀 결정사항 ②)
  */
-export const AUTO_DELETE_HOURS = 24;
-
-export function hoursUntilAutoDelete(createdAt: string, now: number = Date.now()) {
-  const start = toDate(createdAt);
-  if (!start) return 0;
-  const expiresAt = start.getTime() + AUTO_DELETE_HOURS * 60 * 60 * 1000;
-  return Math.max(0, Math.ceil((expiresAt - now) / (60 * 60 * 1000)));
-}
+export const AUTO_DELETE_NOTICE = "최대 48시간 이내";
 
 /** 010-0000-0000 */
 export function formatPhone(raw: string) {

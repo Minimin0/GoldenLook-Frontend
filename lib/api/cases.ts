@@ -69,3 +69,27 @@ export function publishCase(id: string) {
 export function flyerImageUrl(shareId: string) {
   return `${apiBaseUrl()}/api/flyer/${shareId}`;
 }
+
+/**
+ * 공개 전단 메타. 전화 버튼에 필요한 최소 정보만 받는다. (팀 결정사항 ①)
+ *
+ * 필수는 `contact` 하나뿐이고 나머지는 오면 쓰고 없으면 무시한다.
+ * Backend 가 아직 배포 전이면 404 가 나므로 실패를 null 로 삼켜서
+ * 전화 버튼만 감추고 나머지 화면은 그대로 동작하게 한다.
+ */
+export type FlyerMeta = {
+  contact?: string | null;
+  name?: string | null;
+  /** 표시용으로 이미 포맷된 문자열. PNG 와 같은 문구여야 한다. */
+  missingAt?: string | null;
+  place?: string | null;
+};
+
+export async function getFlyerMeta(shareId: string): Promise<FlyerMeta | null> {
+  try {
+    const meta = await apiRequest<FlyerMeta>(`/api/flyer/${shareId}/meta`, { auth: false });
+    return meta?.contact ? meta : null;
+  } catch {
+    return null;
+  }
+}
