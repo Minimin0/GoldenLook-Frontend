@@ -457,17 +457,17 @@ function CreateWizard() {
         )}
       </main>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 backdrop-blur">
+      <div className="app-bar border-t border-line bg-white/95 backdrop-blur">
         {blockers.length > 0 && (
           <p
-            className="mx-auto w-full max-w-[480px] px-5 pt-2.5 text-[13px] font-semibold leading-snug text-navy-600"
+            className="px-5 pt-2.5 text-[13px] font-semibold leading-snug text-navy-600"
             aria-live="polite"
           >
             {blockers.join(", ")}
             {step === 3 ? " 을(를) 채우면 발행할 수 있습니다." : " 이(가) 필요합니다."}
           </p>
         )}
-        <div className="mx-auto flex w-full max-w-[480px] gap-2 px-5 pb-[max(12px,env(safe-area-inset-bottom))] pt-3">
+        <div className="flex gap-2 px-5 pb-[max(12px,env(safe-area-inset-bottom))] pt-3">
           {step > 0 && (
             <Button disabled={busy || publishing} onClick={() => setStep((s) => s - 1)} size="lg" variant="outline">
               이전

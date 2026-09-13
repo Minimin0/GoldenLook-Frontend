@@ -105,8 +105,8 @@ export default function DemoPage() {
         </section>
       </main>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 backdrop-blur">
-        <div className="mx-auto w-full max-w-[480px] px-5 pb-[max(12px,env(safe-area-inset-bottom))] pt-3">
+      <div className="app-bar border-t border-line bg-white/95 backdrop-blur">
+        <div className="px-5 pb-[max(12px,env(safe-area-inset-bottom))] pt-3">
           <ButtonLink fullWidth href="/create" size="lg" variant="signal">
             내 전단 직접 만들기
             <ArrowRight size={19} />

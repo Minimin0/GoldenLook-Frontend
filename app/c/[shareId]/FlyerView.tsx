@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, FileX2, Loader2, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { CheckCircle2, FileText, FileX2, House, Loader2, Sparkles } from "lucide-react";
 import { BrandMark } from "@/components/layout/AppHeader";
 import { ShareBar } from "@/components/share/ShareActions";
 import { ButtonLink } from "@/components/ui/Button";
@@ -47,9 +48,19 @@ export function FlyerView({
   return (
     <>
       <main className="pb-36">
-        <header className="flex items-center gap-2 px-5 py-3">
-          <BrandMark size={26} />
-          <span className="text-[15px] font-extrabold text-navy-800">Golden Look 전단</span>
+        {/* 링크로 들어온 사람도, 방금 발행한 보호자도 여기서 빠져나갈 수 있어야 한다. */}
+        <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-line bg-white px-4 py-3">
+          <Link className="flex items-center gap-2" href="/">
+            <BrandMark size={26} />
+            <span className="text-[15px] font-extrabold text-navy-800">Golden Look 전단</span>
+          </Link>
+          <Link
+            className="flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-[13px] font-bold text-navy-700 hover:bg-navy-50"
+            href={justCreated ? "/my" : "/"}
+          >
+            {justCreated ? <FileText size={16} /> : <House size={16} />}
+            {justCreated ? "내 전단" : "홈"}
+          </Link>
         </header>
 
         {justCreated && (
@@ -95,6 +106,23 @@ export function FlyerView({
             검색엔진에 노출되지 않고, 등록 후 약 {AUTO_DELETE_HOURS}시간이 지나면 자동으로
             삭제됩니다.
           </p>
+
+          <div className="mt-5 flex flex-col items-center gap-2">
+            <Link
+              className="text-[13px] font-bold text-navy-600 underline underline-offset-2"
+              href={justCreated ? "/my" : "/"}
+            >
+              {justCreated ? "내 전단 목록으로 가기" : "Golden Look 홈으로"}
+            </Link>
+            {justCreated && (
+              <Link
+                className="text-[13px] font-semibold text-muted underline underline-offset-2"
+                href="/"
+              >
+                홈으로
+              </Link>
+            )}
+          </div>
         </section>
       </main>
 

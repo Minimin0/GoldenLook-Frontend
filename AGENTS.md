@@ -55,6 +55,9 @@ Golden Look의 모바일 중심 Frontend입니다. 로그인, 사진 업로드, 
   Node 와 브라우저의 ICU 데이터가 달라 `AM` / `오전` 처럼 갈리면 hydration 오류가 납니다.
 - 버튼을 비활성화할 때는 이유를 함께 보여 줍니다. 위저드는 `blockers` 목록을 버튼 위에 출력합니다.
 - `/demo` 는 합성 데이터 전용입니다. 실제 인물 사진이나 실제 연락처를 넣지 않습니다.
+- 하단 고정 바는 `globals.css` 의 `.app-bar` 를 씁니다. `fixed inset-x-0` 로 두면 바탕이
+  화면 전체 폭으로 깔려서 가운데 정렬된 480px 앱 셸과 어긋나 보입니다.
+- 공개 전단(`/c/[shareId]`)에는 링크로 들어온 사람이 빠져나갈 경로가 항상 있어야 합니다.
 
 UI 시안(`reference/design-ui`) 반영 내역과 팀 확인 대기 항목은 `docs/UI_BASELINE_REVIEW.md` 에 있습니다.
 

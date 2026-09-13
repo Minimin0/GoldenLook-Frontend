@@ -87,6 +87,21 @@
     padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
   }
 
+  /*
+   * 하단 고정 바.
+   * `inset-x-0` 으로 두면 바탕이 화면 전체 폭으로 깔려서, 가운데 정렬된 480px 앱 셸과
+   * 어긋나 별도의 띠처럼 보인다. 셸과 같은 폭으로 맞춰 붙인다.
+   */
+  .app-bar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    z-index: 40;
+  }
+
   .tabular {
     font-variant-numeric: tabular-nums;
   }

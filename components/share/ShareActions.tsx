@@ -75,12 +75,9 @@ export function ShareBar(props: ShareTarget & { className?: string }) {
 
   return (
     <div
-      className={cn(
-        "fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 backdrop-blur",
-        props.className,
-      )}
+      className={cn("app-bar border-t border-line bg-white/95 backdrop-blur", props.className)}
     >
-      <div className="mx-auto w-full max-w-[480px] px-4 pb-[max(12px,env(safe-area-inset-bottom))] pt-3">
+      <div className="px-4 pb-[max(12px,env(safe-area-inset-bottom))] pt-3">
         <div className="flex gap-2">
           <button
             type="button"

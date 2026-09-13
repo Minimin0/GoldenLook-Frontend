@@ -17,9 +17,9 @@ export function BottomNav() {
   return (
     <nav
       aria-label="주요 메뉴"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 backdrop-blur"
+      className="app-bar border-t border-line bg-white/95 backdrop-blur"
     >
-      <ul className="mx-auto flex w-full max-w-[480px] items-stretch pb-[env(safe-area-inset-bottom,0px)]">
+      <ul className="flex items-stretch pb-[env(safe-area-inset-bottom,0px)]">
         {TABS.map(({ href, label, icon: Icon }) => {
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (
