@@ -1,5 +1,6 @@
 "use client";
 
+import { DateTimeField } from "@/components/create/DateTimeField";
 import { RegionSelect } from "@/components/create/RegionSelect";
 import { AppearanceBox } from "@/components/flyer/AppearanceBox";
 import { LabeledInput } from "@/components/ui/Field";
@@ -94,10 +95,9 @@ export function FlyerInfoStep({
         </p>
       )}
 
-      <LabeledInput
+      <DateTimeField
         label="마지막으로 확인된 시각"
         onChange={set("missingAt")}
-        type="datetime-local"
         value={form.missingAt}
       />
 

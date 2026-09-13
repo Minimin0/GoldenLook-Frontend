@@ -469,7 +469,13 @@ function CreateWizard() {
         )}
         <div className="flex gap-2 px-5 pb-[max(12px,env(safe-area-inset-bottom))] pt-3">
           {step > 0 && (
-            <Button disabled={busy || publishing} onClick={() => setStep((s) => s - 1)} size="lg" variant="outline">
+            <Button
+              className="shrink-0"
+              disabled={busy || publishing}
+              onClick={() => setStep((s) => s - 1)}
+              size="lg"
+              variant="outline"
+            >
               이전
             </Button>
           )}

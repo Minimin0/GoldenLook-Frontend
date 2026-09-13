@@ -19,7 +19,7 @@ const SIZE: Record<Size, string> = {
 };
 
 const BASE =
-  "inline-flex items-center justify-center gap-2 font-semibold transition-colors disabled:opacity-40 disabled:pointer-events-none select-none";
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold transition-colors disabled:opacity-40 disabled:pointer-events-none select-none";
 
 type CommonProps = {
   variant?: Variant;
