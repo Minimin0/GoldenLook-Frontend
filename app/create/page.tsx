@@ -71,6 +71,20 @@ function toDateTimeLocal(value?: string | null) {
   return new Date(offset).toISOString().slice(0, 16);
 }
 
+/**
+ * 이어서 작성할 때 돌아갈 단계.
+ * face_only 인데 나이·키·성별·체형이 비어 있으면 generate 가 INVALID_INPUT 이라,
+ * 옷차림이 아니라 사진 단계부터 다시 받아야 한다.
+ */
+function resumeStep(data: CaseDto) {
+  if (data.generationStatus === "GENERATED" && data.generatedUrl) return 3;
+  if (data.photoMode === "face_only") {
+    const body = data.bodyProfile ?? {};
+    if (!data.age || !data.heightCm || !body.gender || !body.bodyType) return 0;
+  }
+  return 1;
+}
+
 function CreateWizard() {
   const router = useRouter();
   const params = useSearchParams();
@@ -141,7 +155,7 @@ function CreateWizard() {
           contact: data.contact ?? "",
         });
         setConsent(data.contactDisclosureConsent);
-        setStep(data.generationStatus === "GENERATED" && data.generatedUrl ? 3 : 1);
+        setStep(resumeStep(data));
       })
       .catch((cause) => active && setError(errorMessage(cause)))
       .finally(() => active && setLoading(false));
@@ -300,7 +314,8 @@ function CreateWizard() {
 
   const canGoNext = (() => {
     if (step === 0) {
-      if (!photoFile && !caseData) return false;
+      // 서버에 저장된 사진이든 방금 고른 사진이든, 보이는 사진이 있어야 넘어간다.
+      if (!previewUrl) return false;
       if (photoMode !== "face_only") return true;
       return (
         inRange(form.age, 1, 120) &&
