@@ -133,6 +133,13 @@ Backend 제한(4MB, jpeg/png/webp, 32~6000px)에 맞춰 `preparePhoto()`가 크�
 착의: top: 흰색, 니트. bottom: 검정, 청바지. hat: confirmed none. shoes: confirmed none.
 ```
 
+같은 줄에서 문제가 두 개 더 있습니다.
+
+- **브랜드가 옷 이름에 섞입니다.** `[색, 종류, 브랜드]` 를 그냥 이어 붙여서 `검정 패딩 나이키` 가 되고,
+  읽는 사람은 "나이키"가 브랜드인지 옷 종류의 일부인지 알 수 없습니다.
+- **특이사항에 라벨이 없습니다.** `notes` 를 본문만 찍어서, 보호자가 "없음" 이라고 적으면
+  전단에 `없음` 한 단어만 뜨고 무엇이 없다는 뜻인지 알 수 없습니다.
+
 착장은 전단에서 가장 중요한 정보입니다. 지나가던 사람이 대조하는 건 얼굴보다 옷입니다.
 1200px 이미지의 24px 글자는 모바일에서 480px 로 줄어들면 10px 아래로 떨어져 읽히지 않습니다.
 
@@ -147,8 +154,10 @@ export function flyerClothingLines(appearance: Appearance) {
     const part = appearance[key];
     if (part.status === "none") return [`${PART_LABEL[key]}: 착용 안 함`];
     if (part.status === "unknown") return [];
-    const bits = [colorName(part.color), part.type, part.brand].filter(Boolean);
-    return bits.length ? [`${PART_LABEL[key]}: ${bits.join(" ")}`] : [];
+    // 브랜드는 색·종류와 성격이 달라서 붙여 쓰면 옷 이름의 일부로 읽힌다
+    const described = [colorName(part.color), part.type].filter(Boolean).join(" ");
+    if (!described) return [];
+    return [`${PART_LABEL[key]}: ${described}${part.brand ? ` (${part.brand})` : ""}`];
   });
   const items = appearance.items.map(
     (item) => `소지품: ${[colorName(item.color), item.type].filter(Boolean).join(" ")}`,
@@ -173,7 +182,17 @@ clothing.length
   : null,
 ```
 
-`notes` 도 24 → 26 + `fontWeight: 700` 이면 읽힙니다.
+`notes` 는 크기(24 → 28 + `fontWeight: 700`)와 함께 라벨을 붙입니다.
+
+```ts
+flyer.notes
+  ? h("div", { style: { display: "flex", flexDirection: "column", gap: 4 } },
+      h("div", { style: { fontSize: 22, color: "#5a6b85" } }, "특이사항"),
+      h("div", { style: { fontSize: 28, fontWeight: 700, color: "#c82a1e" } }, flyer.notes),
+    )
+  : null,
+```
+
 `next/og`(satori)는 자식이 둘 이상인 div 에 `display: "flex"` 를 명시해야 하므로 위 style 을 그대로 쓰면 됩니다.
 
 Frontend 목업(`scratchpad/mock`)에 같은 레이아웃을 적용해 두었으니 결과를 먼저 보고 판단할 수 있습니다.
