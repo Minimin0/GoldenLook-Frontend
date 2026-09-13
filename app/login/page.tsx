@@ -106,8 +106,13 @@ function LoginForm() {
             )}
             key={value}
             onClick={() => {
+              // 탭을 바꾸면 앞 탭에 치던 값을 비운다.
+              // 로그인 칸에 남은 값이 회원가입 폼에 그대로 보이면 실수로 가입된다.
+              if (mode === value) return;
               setMode(value);
               setError(null);
+              setEmail("");
+              setPassword("");
             }}
             type="button"
           >
