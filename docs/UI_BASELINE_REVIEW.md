@@ -124,17 +124,71 @@ Backend 제한(4MB, jpeg/png/webp, 32~6000px)에 맞춰 `preparePhoto()`가 크�
 
 우선순위가 가장 높은 요청입니다. 결정 전까지는 PNG + 공유 버튼으로 동작합니다.
 
-### 4.2 `missingAt` 형식
+### 4.2 공개 전단의 착장 표기 (Backend 요청, 우선순위 높음)
+
+`app/api/flyer/[shareId]/route.ts` 가 AI 프롬프트용 헬퍼 `clothingLines()` 를 그대로 재사용하고 있어서,
+공개 전단 PNG 에 **영어 키가 노출**되고 4개 항목이 한 줄에 뭉칩니다.
+
+```text
+착의: top: 흰색, 니트. bottom: 검정, 청바지. hat: confirmed none. shoes: confirmed none.
+```
+
+착장은 전단에서 가장 중요한 정보입니다. 지나가던 사람이 대조하는 건 얼굴보다 옷입니다.
+1200px 이미지의 24px 글자는 모바일에서 480px 로 줄어들면 10px 아래로 떨어져 읽히지 않습니다.
+
+**제안**: 전단 전용 한글 포맷터를 따로 두고, 항목마다 줄을 나눠 제목 다음으로 크게 그립니다.
+
+```ts
+// lib/server/flyer.ts (신규) — AI 프롬프트용 clothingLines 와 분리한다
+const PART_LABEL = { top: "상의", bottom: "하의", hat: "모자", shoes: "신발" } as const;
+
+export function flyerClothingLines(appearance: Appearance) {
+  const garments = (["top", "bottom", "hat", "shoes"] as const).flatMap((key) => {
+    const part = appearance[key];
+    if (part.status === "none") return [`${PART_LABEL[key]}: 착용 안 함`];
+    if (part.status === "unknown") return [];
+    const bits = [colorName(part.color), part.type, part.brand].filter(Boolean);
+    return bits.length ? [`${PART_LABEL[key]}: ${bits.join(" ")}`] : [];
+  });
+  const items = appearance.items.map(
+    (item) => `소지품: ${[colorName(item.color), item.type].filter(Boolean).join(" ")}`,
+  );
+  return [...garments, ...items];
+}
+```
+
+```ts
+// route.ts — 한 줄짜리 `착의:` div 를 박스로 교체
+clothing.length
+  ? h("div", {
+      style: {
+        display: "flex", flexDirection: "column", gap: 8, padding: 20,
+        border: "3px solid #0e2546", borderRadius: 16, background: "#ffffff",
+      },
+    },
+      h("div", { style: { fontSize: 26, fontWeight: 800, color: "#0e2546" } }, "실종 당시 착장"),
+      ...clothing.map((line) =>
+        h("div", { style: { fontSize: 32, fontWeight: 700, color: "#0e2546" } }, line)),
+    )
+  : null,
+```
+
+`notes` 도 24 → 26 + `fontWeight: 700` 이면 읽힙니다.
+`next/og`(satori)는 자식이 둘 이상인 div 에 `display: "flex"` 를 명시해야 하므로 위 style 을 그대로 쓰면 됩니다.
+
+Frontend 목업(`scratchpad/mock`)에 같은 레이아웃을 적용해 두었으니 결과를 먼저 보고 판단할 수 있습니다.
+
+### 4.3 `missingAt` 형식
 
 계약상 최대 80자 문자열입니다. Frontend는 `datetime-local` 값(`2026-09-13T10:00`)을 그대로 저장하고
 전단 PNG에는 그 문자열이 그대로 찍힙니다. 사람이 읽기 좋은 형식(`2026년 9월 13일 오전 10:00`)으로
 바꿔 찍을지, Frontend가 포맷해서 보낼지 정하면 됩니다.
 
-### 4.3 자동 삭제 24시간 vs 48시간
+### 4.4 자동 삭제 24시간 vs 48시간
 
 기획서는 "최대 48시간", cleanup cron은 24시간입니다. 둘 중 하나로 문구와 구현을 맞추는 편이 좋습니다.
 
-### 4.4 공개 전단 경로
+### 4.5 공개 전단 경로
 
 `main` 스캐폴드의 `/c/[shareId]`를 유지했습니다. 시안은 `/flyer/[shareId]`였습니다.
 바꾸려면 발행된 링크가 바뀌므로 제출 전에 정하는 편이 안전합니다.
