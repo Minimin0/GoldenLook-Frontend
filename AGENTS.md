@@ -21,7 +21,37 @@ Golden Look의 모바일 중심 Frontend입니다. 로그인, 사진 업로드, 
 - 재생성 최대 3회
 
 ## 수정 가능 영역
-`app/`, `components/`, `lib/`, `public/`, `tests/`.
+`app/`, `components/`, `lib/`, `public/`, `tests/`, `docs/`.
+
+## 구현 상태
+
+화면은 모두 구현돼 있고 Backend v4 API에 연결돼 있습니다.
+
+| 경로 | 로그인 | 내용 |
+|---|---|---|
+| `/` | 불필요 | 랜딩 |
+| `/login` | - | Email/Password 로그인·회원가입 |
+| `/create` | 필요 | 4단계 위저드 (`?case=<id>` 로 이어서 작성) |
+| `/my` | 필요 | 내 전단 목록 / 공유 / 삭제 |
+| `/c/[shareId]` | 불필요 | 공개 전단 PNG + 공유 |
+
+`lib/api/cases.ts` 밖에서 Backend를 직접 `fetch` 하지 않습니다. 토큰 부착과 ErrorCode 해석이 한 곳에 있습니다.
+
+## Backend 동작상 주의점
+
+화면을 고칠 때 아래를 깨면 사용자가 만든 결과가 조용히 날아갑니다.
+
+- **생성 입력을 다시 PATCH하면 Backend가 생성 결과와 재생성 횟수를 초기화합니다.**
+  `appearance`, 사진, `photoMode`, 그리고 `face_only`의 `age`/`heightCm`/`bodyProfile`이 해당합니다.
+  위저드는 실제로 바뀐 값만 담아 보냅니다. 단계 이동마다 통째로 PATCH 하지 마세요.
+- **이미지 URL은 300초 signed URL** 입니다. 저장하지 말고, 만료되면 case를 다시 읽습니다.
+- **재생성 횟수는 서버가 셉니다.** 첫 성공은 차감되지 않고 이후 3회가 허용되며, 실패한 시도는 차감되지 않습니다.
+  화면에서 따로 세면 기획서 5.4와 어긋납니다.
+- **발행 후에는 삭제만 가능합니다** (`CASE_PUBLISHED`).
+- 20색은 `lib/generated/colors.json` 한 곳에서만 옵니다. 여기에 색을 추가하면 Backend가 `INVALID_INPUT` 으로 거절합니다.
+- 목격 장소는 화면에서 시도·시군구로 받고 `composePlace()` 로 계약의 `place` 한 칸에 합칩니다.
+
+UI 시안(`reference/design-ui`) 반영 내역과 팀 확인 대기 항목은 `docs/UI_BASELINE_REVIEW.md` 에 있습니다.
 
 ## 최소 계약
 팀 간 통합을 위해 아래만 임의 변경하지 않습니다.
