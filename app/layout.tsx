@@ -1,29 +1,34 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { AuthProvider } from "@/components/auth/AuthProvider";
+import { KakaoScript } from "@/components/share/KakaoScript";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Golden Look",
-  description: "Mobile-first missing-person flyer UX for Wanted AI Championship 2026",
+  title: {
+    default: "Golden Look · 실종 전단을 1분 만에",
+    template: "%s · Golden Look",
+  },
+  description:
+    "보호자가 기억하는 실종 당시 정보를 바탕으로 예상 모습을 재현하고, 모바일 전단으로 바로 공유합니다.",
+  // 공개 전단 페이지를 포함해 서비스 전체를 검색엔진에서 제외한다. (기획서 12. 보안·안전)
+  robots: { index: false, follow: false },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0e2546",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="ko"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="ko">
+      <body>
+        <AuthProvider>
+          <div className="app-shell">{children}</div>
+        </AuthProvider>
+        <KakaoScript />
+      </body>
     </html>
   );
 }
