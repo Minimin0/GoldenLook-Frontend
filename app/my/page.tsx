@@ -11,6 +11,7 @@ import { ErrorText } from "@/components/ui/Field";
 import { deleteCase, listCases } from "@/lib/api/cases";
 import { errorMessage } from "@/lib/api/client";
 import { AUTO_DELETE_NOTICE } from "@/lib/format";
+import { clearDraft, clearExpiredDrafts } from "@/lib/draft";
 import type { CaseListItem } from "@/lib/schemas";
 
 function MyFlyers() {
@@ -26,6 +27,8 @@ function MyFlyers() {
       listCases()
         .then((next) => {
           if (!active()) return;
+          // 만료된 임시 저장을 정리한다. 연락처를 브라우저에 오래 남기지 않는다.
+          clearExpiredDrafts();
           setCases(next);
           setError(null);
         })
@@ -52,6 +55,7 @@ function MyFlyers() {
     setDeletingId(target.id);
     try {
       await deleteCase(target.id);
+      clearDraft(target.id);
       setCases((prev) => prev.filter((item) => item.id !== target.id));
       setPendingDelete(null);
     } catch (cause) {

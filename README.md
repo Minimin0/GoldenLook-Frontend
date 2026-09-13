@@ -122,6 +122,8 @@ Frontend는 Gemini 모델명이나 provider 구현을 알 필요가 없습니다
 - 112/182 없음: 신고 버튼도, 경찰 시스템처럼 보이는 요소도 없습니다.
 - noindex: `app/layout.tsx`와 공개 전단의 `generateMetadata` 양쪽에서 설정합니다.
 - 작성자 삭제: `/my`에서 확인 다이얼로그 후 `DELETE`.
+- 자동 삭제 안내: `AUTO_DELETE_NOTICE`("최대 48시간 이내") 한 곳에서만 옵니다. cron이 하루 1회라 실제 삭제는 24~48시간 사이이며, 남은 시간을 세어 보여 주지 않습니다.
+- 작성 중 임시 저장: `lib/draft.ts`가 4단계 입력을 브라우저에만 담아 둡니다. 서버 API도 DB도 쓰지 않고, 발행·삭제 시 즉시 지우며 6시간 뒤 만료됩니다.
 - synthetic demo: `/demo`는 `lib/demo.ts`의 합성 값만 씁니다. 인물은 사진이 아니라 일러스트(`public/demo-figure.svg`)이고 연락처는 더미 `010-0000-0000` 한 개이며 전화 링크를 걸지 않습니다.
 - 날짜 표기: `Intl` 을 쓰지 않고 KST 고정으로 직접 포맷합니다. 실행 환경 ICU 차이로 서버와 브라우저 출력이 갈리면 hydration 오류가 납니다.
 

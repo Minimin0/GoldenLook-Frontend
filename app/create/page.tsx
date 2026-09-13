@@ -31,6 +31,7 @@ import {
 } from "@/lib/api/cases";
 import { composePlace, hasSigungu, parsePlace } from "@/lib/regions";
 import { isValidContact } from "@/lib/format";
+import { clearDraft, readDraft, writeDraft, type FlyerDraft } from "@/lib/draft";
 import { preparePhoto } from "@/lib/resize-image";
 import { cn } from "@/lib/cn";
 import type { CaseDto, CasePatch, PhotoMode } from "@/lib/schemas";
@@ -109,6 +110,9 @@ function CreateWizard() {
   const [form, setForm] = useState<FlyerForm>(EMPTY_FORM);
   const [consent, setConsent] = useState(false);
 
+  /** 탭이 죽어서 잃어버린 작성 내용. 복구할지 사용자가 고른다. */
+  const [draftOffer, setDraftOffer] = useState<FlyerDraft | null>(null);
+
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [publishing, setPublishing] = useState(false);
@@ -156,6 +160,7 @@ function CreateWizard() {
         });
         setConsent(data.contactDisclosureConsent);
         setStep(resumeStep(data));
+        setDraftOffer(readDraft(data.id));
       })
       .catch((cause) => active && setError(errorMessage(cause)))
       .finally(() => active && setLoading(false));
@@ -176,6 +181,28 @@ function CreateWizard() {
       // 화면 상태를 망가뜨리지 않는다. 다음 동작에서 다시 시도된다.
     }
   }, [caseData, photoFile]);
+
+  // 4단계 입력은 발행할 때 한 번에 서버로 간다. 그 전에 탭이 죽어도 남도록 브라우저에 둔다.
+  useEffect(() => {
+    if (!caseData?.id || caseData.published) return;
+    writeDraft(caseData.id, form, consent);
+  }, [caseData?.id, caseData?.published, form, consent]);
+
+  const applyDraft = () => {
+    if (!draftOffer) return;
+    setForm((prev) => ({
+      ...draftOffer.form,
+      // face_only 의 나이·키는 생성 입력이라 서버 값이 기준이다.
+      ...(photoMode === "face_only" ? { age: prev.age, heightCm: prev.heightCm } : {}),
+    }));
+    setConsent(draftOffer.consent);
+    setDraftOffer(null);
+  };
+
+  const discardDraft = () => {
+    if (caseData) clearDraft(caseData.id);
+    setDraftOffer(null);
+  };
 
   const pickFile = async (file?: File | null) => {
     if (!file) return;
@@ -305,6 +332,7 @@ function CreateWizard() {
 
       if (Object.keys(patch).length > 0) setCaseData(await patchCase(caseData.id, patch));
       const { shareId } = await publishCase(caseData.id);
+      clearDraft(caseData.id);
       router.push(`/c/${shareId}?created=1`);
     } catch (cause) {
       setError(errorMessage(cause));
@@ -436,6 +464,23 @@ function CreateWizard() {
             onRefresh={refreshUrls}
             photoMode={photoMode}
           />
+        )}
+
+        {step === 3 && caseData && draftOffer && (
+          <div className="mb-4 rounded-2xl border border-navy-200 bg-navy-50 p-4">
+            <p className="text-[14px] font-bold text-navy-800">작성하던 내용이 남아 있습니다</p>
+            <p className="mt-0.5 text-[13px] leading-snug text-navy-600">
+              이 기기에만 임시로 저장된 내용입니다. 불러오면 아래 입력란이 채워집니다.
+            </p>
+            <div className="mt-3 flex gap-2">
+              <Button fullWidth onClick={applyDraft}>
+                이어서 쓰기
+              </Button>
+              <Button className="shrink-0" onClick={discardDraft} variant="outline">
+                새로 쓰기
+              </Button>
+            </div>
+          </div>
         )}
 
         {step === 3 && caseData && (
