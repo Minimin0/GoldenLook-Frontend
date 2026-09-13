@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
+import { setUnauthorizedHandler } from "@/lib/api/client";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 
 /**
@@ -47,6 +48,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       active = false;
       listener.subscription.unsubscribe();
     };
+  }, [configured]);
+
+  /**
+   * 서버가 401 을 돌려주면 남아 있는 세션을 버린다.
+   * onAuthStateChange 가 세션 없음을 알리고, RequireAuth 가 로그인 화면으로 보낸다.
+   */
+  useEffect(() => {
+    if (!configured) return;
+    setUnauthorizedHandler(() => {
+      void getSupabase().auth.signOut();
+    });
+    return () => setUnauthorizedHandler(null);
   }, [configured]);
 
   const value = useMemo<AuthState>(

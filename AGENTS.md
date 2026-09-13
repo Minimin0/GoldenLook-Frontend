@@ -58,6 +58,9 @@ Golden Look의 모바일 중심 Frontend입니다. 로그인, 사진 업로드, 
 - 하단 고정 바는 `globals.css` 의 `.app-bar` 를 씁니다. `fixed inset-x-0` 로 두면 바탕이
   화면 전체 폭으로 깔려서 가운데 정렬된 480px 앱 셸과 어긋나 보입니다.
 - 공개 전단(`/c/[shareId]`)에는 링크로 들어온 사람이 빠져나갈 경로가 항상 있어야 합니다.
+- 브라우저에 세션이 남아 있어도 서버 기준으로는 만료·폐기됐을 수 있습니다.
+  API 가 401 을 돌려주면 `setUnauthorizedHandler` 로 세션을 정리해 로그인 화면으로 보냅니다.
+  화면 안에 "로그인이 필요합니다" 만 띄우면 로그인한 것처럼 보이는 채로 갇힙니다.
 
 UI 시안(`reference/design-ui`) 반영 내역과 팀 확인 대기 항목은 `docs/UI_BASELINE_REVIEW.md` 에 있습니다.
 

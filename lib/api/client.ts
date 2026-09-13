@@ -52,6 +52,19 @@ export function isRetryable(error: unknown) {
   );
 }
 
+/**
+ * 서버가 401 을 돌려줬을 때 부를 콜백.
+ *
+ * 브라우저에 세션이 남아 있어도 서버 기준으로는 만료·폐기됐을 수 있다.
+ * 그 상태를 방치하면 로그인한 것처럼 보이는 채로 모든 요청이 실패하고
+ * 사용자는 빠져나갈 방법이 없다. AuthProvider 가 여기에 로그아웃을 걸어 둔다.
+ */
+let unauthorizedHandler: (() => void) | null = null;
+
+export function setUnauthorizedHandler(handler: (() => void) | null) {
+  unauthorizedHandler = handler;
+}
+
 export function apiBaseUrl() {
   return (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replace(/\/$/, "");
 }
@@ -77,7 +90,10 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 
   if (auth) {
     const token = await accessToken();
-    if (!token) throw new ApiError("UNAUTHORIZED", 401);
+    if (!token) {
+      unauthorizedHandler?.();
+      throw new ApiError("UNAUTHORIZED", 401);
+    }
     headers.set("Authorization", `Bearer ${token}`);
   }
   if (json !== undefined) headers.set("Content-Type", "application/json");
@@ -100,6 +116,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   const payload = await response.json().catch(() => null);
   if (!response.ok) {
     const code = (payload?.code ?? "INTERNAL") as ApiErrorCode;
+    if (response.status === 401 || code === "UNAUTHORIZED") unauthorizedHandler?.();
     throw new ApiError(
       code in FALLBACK_MESSAGE ? code : "INTERNAL",
       response.status,
