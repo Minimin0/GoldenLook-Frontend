@@ -5,7 +5,7 @@ import { RegionSelect } from "@/components/create/RegionSelect";
 import { AppearanceBox } from "@/components/flyer/AppearanceBox";
 import { LabeledInput } from "@/components/ui/Field";
 import type { Appearance, PhotoMode } from "@/lib/schemas";
-import { formatPhone, isValidContact } from "@/lib/format";
+import { formatPhone, isValidContact, withRo } from "@/lib/format";
 
 export type FlyerForm = {
   name: string;
@@ -132,7 +132,7 @@ export function FlyerInfoStep({
           contactTouched && !contactValid
             ? "숫자 7~15자리의 연락처를 입력해 주세요."
             : contactValid
-              ? `전단에 ${formatPhone(form.contact)} 로 표시됩니다.`
+              ? `전단에 ${formatPhone(form.contact)}${withRo(formatPhone(form.contact))} 표시됩니다.`
               : undefined
         }
         inputMode="tel"

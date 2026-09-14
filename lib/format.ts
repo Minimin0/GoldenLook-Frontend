@@ -83,11 +83,17 @@ export function isGoldenHour(from: string, now: number = Date.now()) {
  */
 export const AUTO_DELETE_NOTICE = "최대 48시간 이내";
 
-/** 010-0000-0000 */
+/**
+ * 010-0000-0000 / 02-000-0000 — 보호자가 자기 번호를 확인하는 화면에도 쓰인다.
+ * 서울 지역번호(02)만 두 자리라서 3자리로 자르면 남의 번호처럼 보인다.
+ */
 export function formatPhone(raw: string) {
   const digits = raw.replace(/\D/g, "");
-  if (digits.length === 11) return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
-  if (digits.length === 10) return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  const split = (head: number) =>
+    `${digits.slice(0, head)}-${digits.slice(head, digits.length - 4)}-${digits.slice(-4)}`;
+
+  if (digits.startsWith("02") && (digits.length === 9 || digits.length === 10)) return split(2);
+  if (digits.length === 10 || digits.length === 11) return split(3);
   return raw;
 }
 
@@ -109,4 +115,33 @@ export function buildShareUrl(shareId: string) {
     process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, "") ||
     (typeof window === "undefined" ? "" : window.location.origin);
   return `${base}/c/${shareId}`;
+}
+
+/** 숫자를 소리 내어 읽었을 때의 받침. "010-1234-5678 로" 가 아니라 "…5678로" 가 맞다. */
+const DIGIT_JONGSEONG: Record<string, number> = {
+  "0": 21, "1": 8, "2": 0, "3": 16, "4": 0, "5": 0, "6": 1, "7": 8, "8": 8, "9": 0,
+};
+
+/** 마지막 글자의 받침 번호. 한글도 숫자도 아니면 null. */
+function jongseong(word: string) {
+  const last = word.trim().at(-1) ?? "";
+  if (last in DIGIT_JONGSEONG) return DIGIT_JONGSEONG[last];
+  const code = last.charCodeAt(0);
+  return code >= 0xac00 && code <= 0xd7a3 ? (code - 0xac00) % 28 : null;
+}
+
+/**
+ * 앞 단어의 받침에 맞춰 조사를 고른다.
+ *
+ * "사진 이(가) 필요합니다" 처럼 괄호로 적으면 안내문이 아니라 템플릿 찌꺼기로 읽힌다.
+ * 막힌 이유를 읽어야 하는 사람은 대개 급한 상황이라 문장이 걸리면 안 된다.
+ */
+export function withParticle(word: string, withJongseong: string, withoutJongseong: string) {
+  return jongseong(word) ? withJongseong : withoutJongseong;
+}
+
+/** 로 / 으로. ㄹ 받침은 받침 없는 것과 같이 "로" 를 쓴다. */
+export function withRo(word: string) {
+  const jong = jongseong(word);
+  return jong && jong !== 8 ? "으로" : "로";
 }

@@ -2,7 +2,7 @@
 
 import { Clock } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, withRo } from "@/lib/format";
 
 /**
  * 마지막으로 확인된 시각 입력.
@@ -146,7 +146,7 @@ export function DateTimeField({
 
       <p className="mt-1.5 text-[12px] leading-snug text-muted" aria-live="polite">
         {value
-          ? `전단에 ${formatDateTime(value)} 로 표시됩니다.`
+          ? `전단에 ${formatDateTime(value)}${withRo(formatDateTime(value))} 표시됩니다.`
           : "날짜를 먼저 고르면 시각을 맞출 수 있습니다."}
       </p>
     </div>

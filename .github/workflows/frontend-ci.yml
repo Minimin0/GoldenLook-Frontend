@@ -1,0 +1,27 @@
+name: Frontend CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      # next build 가 .next/types 를 만든 뒤에야 App Router 가 생성하는
+      # LayoutProps/PageProps 를 tsc 가 찾을 수 있다. 순서를 바꾸면 실패한다.
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://ci.invalid
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-anon-key
+          NEXT_PUBLIC_API_BASE_URL: https://ci.invalid
+      - run: npm run typecheck

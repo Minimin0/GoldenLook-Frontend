@@ -115,8 +115,11 @@ export function FlyerView({
             촬영 사진이 아닙니다. 실제 모습과 다를 수 있으니 옷차림과 인상착의를 함께 확인해 주세요.
           </p>
           <p className="mt-2 text-[13px] leading-relaxed text-muted">
-            보신 적이 있다면 아래 전화 버튼으로 보호자에게 시간과 장소를 함께 전해 주세요. 이 페이지는
-            검색엔진에 노출되지 않습니다. 생성된 데이터는 {AUTO_DELETE_NOTICE} 자동 삭제됩니다.
+            {/* 전화 버튼은 공개 메타가 있을 때만 뜬다. 없을 때 "아래 버튼" 을 가리키면
+                존재하지 않는 버튼을 찾게 되므로 전단에 적힌 번호를 안내한다. */}
+            보신 적이 있다면 {meta?.contact ? "아래 전화 버튼으로" : "전단에 적힌 연락처로"} 보호자에게
+            시간과 장소를 함께 전해 주세요. 이 페이지는 검색엔진에 노출되지 않습니다. 생성된 데이터는{" "}
+            {AUTO_DELETE_NOTICE} 자동 삭제됩니다.
           </p>
 
           <div className="mt-5 flex flex-col items-center gap-2">

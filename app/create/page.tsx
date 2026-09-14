@@ -30,7 +30,7 @@ import {
   replaceCasePhoto,
 } from "@/lib/api/cases";
 import { composePlace, hasSigungu, parsePlace } from "@/lib/regions";
-import { isValidContact } from "@/lib/format";
+import { isValidContact, withParticle } from "@/lib/format";
 import { clearDraft, readDraft, writeDraft, type FlyerDraft } from "@/lib/draft";
 import { preparePhoto } from "@/lib/resize-image";
 import { cn } from "@/lib/cn";
@@ -509,7 +509,9 @@ function CreateWizard() {
             aria-live="polite"
           >
             {blockers.join(", ")}
-            {step === 3 ? " 을(를) 채우면 발행할 수 있습니다." : " 이(가) 필요합니다."}
+            {step === 3
+              ? `${withParticle(blockers[blockers.length - 1], "을", "를")} 채우면 발행할 수 있습니다.`
+              : `${withParticle(blockers[blockers.length - 1], "이", "가")} 필요합니다.`}
           </p>
         )}
         <div className="flex gap-2 px-5 pb-[max(12px,env(safe-area-inset-bottom))] pt-3">
