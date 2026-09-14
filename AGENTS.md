@@ -21,7 +21,55 @@ Golden Look의 모바일 중심 Frontend입니다. 로그인, 사진 업로드, 
 - 재생성 최대 3회
 
 ## 수정 가능 영역
-`app/`, `components/`, `lib/`, `public/`, `tests/`.
+`app/`, `components/`, `lib/`, `public/`, `tests/`, `docs/`.
+
+## 구현 상태
+
+화면은 모두 구현돼 있고 Backend v4 API에 연결돼 있습니다.
+
+| 경로 | 로그인 | 내용 |
+|---|---|---|
+| `/` | 불필요 | 랜딩 |
+| `/demo` | 불필요 | synthetic 30초 체험 |
+| `/login` | - | Email/Password 로그인·회원가입 |
+| `/create` | 필요 | 4단계 위저드 (`?case=<id>` 로 이어서 작성) |
+| `/my` | 필요 | 내 전단 목록 / 공유 / 삭제 |
+| `/c/[shareId]` | 불필요 | 공개 전단 PNG + 공유 |
+
+`lib/api/cases.ts` 밖에서 Backend를 직접 `fetch` 하지 않습니다. 토큰 부착과 ErrorCode 해석이 한 곳에 있습니다.
+
+## Backend 동작상 주의점
+
+화면을 고칠 때 아래를 깨면 사용자가 만든 결과가 조용히 날아갑니다.
+
+- **생성 입력을 다시 PATCH하면 Backend가 생성 결과와 재생성 횟수를 초기화합니다.**
+  `appearance`, 사진, `photoMode`, 그리고 `face_only`의 `age`/`heightCm`/`bodyProfile`이 해당합니다.
+  위저드는 실제로 바뀐 값만 담아 보냅니다. 단계 이동마다 통째로 PATCH 하지 마세요.
+- **이미지 URL은 300초 signed URL** 입니다. 저장하지 말고, 만료되면 case를 다시 읽습니다.
+- **재생성 횟수는 서버가 셉니다.** 첫 성공은 차감되지 않고 이후 3회가 허용되며, 실패한 시도는 차감되지 않습니다.
+  화면에서 따로 세면 기획서 5.4와 어긋납니다.
+- **발행 후에는 삭제만 가능합니다** (`CASE_PUBLISHED`).
+- 20색은 `lib/generated/colors.json` 한 곳에서만 옵니다. 여기에 색을 추가하면 Backend가 `INVALID_INPUT` 으로 거절합니다.
+- 목격 장소는 화면에서 시도·시군구로 받고 `composePlace()` 로 계약의 `place` 한 칸에 합칩니다.
+- 날짜는 `Intl.DateTimeFormat` 대신 `lib/format.ts` 의 KST 고정 포맷터를 씁니다.
+  Node 와 브라우저의 ICU 데이터가 달라 `AM` / `오전` 처럼 갈리면 hydration 오류가 납니다.
+- 버튼을 비활성화할 때는 이유를 함께 보여 줍니다. 위저드는 `blockers` 목록을 버튼 위에 출력합니다.
+- `/demo` 는 합성 데이터 전용입니다. 실제 인물 사진이나 실제 연락처를 넣지 않습니다.
+- 하단 고정 바는 `globals.css` 의 `.app-bar` 를 씁니다. `fixed inset-x-0` 로 두면 바탕이
+  화면 전체 폭으로 깔려서 가운데 정렬된 480px 앱 셸과 어긋나 보입니다.
+- 공개 전단(`/c/[shareId]`)에는 링크로 들어온 사람이 빠져나갈 경로가 항상 있어야 합니다.
+- 작성 4단계 입력은 `lib/draft.ts` 가 브라우저에만 임시 저장합니다. 서버 PATCH autosave 는
+  제출 이후로 미뤘습니다(팀 결정사항 ⑤). 연락처가 들어가므로 발행·삭제 시 즉시 지우고
+  6시간이 지나면 만료시킵니다. 이 규칙을 늘리지 마세요.
+- 자동 삭제 문구는 `AUTO_DELETE_NOTICE`("최대 48시간 이내") 하나만 씁니다.
+  cron 이 하루 1회라 실제 삭제는 24~48시간 사이입니다. 남은 시간을 세어 보여 주면 안 됩니다.
+- 날짜 표기는 Backend `lib/server/flyer.ts` 의 `flyerDateTime()` 과 같은 형식이어야
+  전단 PNG 와 화면 문구가 갈라지지 않습니다.
+- 브라우저에 세션이 남아 있어도 서버 기준으로는 만료·폐기됐을 수 있습니다.
+  API 가 401 을 돌려주면 `setUnauthorizedHandler` 로 세션을 정리해 로그인 화면으로 보냅니다.
+  화면 안에 "로그인이 필요합니다" 만 띄우면 로그인한 것처럼 보이는 채로 갇힙니다.
+
+UI 시안(`reference/design-ui`) 반영 내역과 팀 확인 대기 항목은 `docs/UI_BASELINE_REVIEW.md` 에 있습니다.
 
 ## 최소 계약
 팀 간 통합을 위해 아래만 임의 변경하지 않습니다.

@@ -1,26 +1,117 @@
+/* Pretendard: 한글 UI 기본 본문체 */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* ---------- Color: Navy (기본 · 신뢰) ---------- */
+  --color-navy-50: #eef3fa;
+  --color-navy-100: #d8e4f4;
+  --color-navy-200: #b0c7e6;
+  --color-navy-300: #7fa3d4;
+  --color-navy-400: #4e7bbd;
+  --color-navy-500: #2c5a9e;
+  --color-navy-600: #1c447f;
+  --color-navy-700: #143462;
+  --color-navy-800: #0e2546;
+  --color-navy-900: #081a33;
+
+  /* ---------- Color: Signal Red (긴급 · 연락 전용) ---------- */
+  --color-signal-50: #fdecea;
+  --color-signal-100: #fbd5d1;
+  --color-signal-500: #e8392b;
+  --color-signal-600: #c82a1e;
+  --color-signal-700: #9e1f16;
+
+  /* ---------- Color: Alert Orange (경고 상태 전용) ---------- */
+  --color-alert-50: #fff3e8;
+  --color-alert-100: #ffe1c7;
+  --color-alert-500: #ff7a1a;
+  --color-alert-600: #e06200;
+
+  /* ---------- Color: Surface / Text ---------- */
+  --color-paper: #f4f6fb;
+  --color-line: #e3e8f0;
+  --color-ink: #0e1b2e;
+  --color-muted: #5a6b85;
+
+  /* ---------- Typography ---------- */
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+    "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+
+  /* ---------- Shape ---------- */
+  --radius-card: 1rem;
+  --radius-sheet: 1.5rem;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.6;
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* 키보드 포커스는 항상 보이게 유지 */
+  :focus-visible {
+    outline: 3px solid var(--color-navy-400);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  /* 모바일 우선: 480px 고정 폭 중앙 정렬 셸 */
+  .app-shell {
+    width: 100%;
+    max-width: 480px;
+    margin-inline: auto;
+    min-height: 100dvh;
+    background-color: #ffffff;
+    position: relative;
+  }
+
+  /* 하단 고정 내비게이션 + 홈 인디케이터 여백 */
+  .nav-safe-area {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /*
+   * 하단 고정 바.
+   * `inset-x-0` 으로 두면 바탕이 화면 전체 폭으로 깔려서, 가운데 정렬된 480px 앱 셸과
+   * 어긋나 별도의 띠처럼 보인다. 셸과 같은 폭으로 맞춰 붙인다.
+   */
+  .app-bar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    z-index: 40;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
