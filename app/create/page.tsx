@@ -87,7 +87,7 @@ function resumeStep(data: CaseDto) {
   return 1;
 }
 
-function CreateWizard() {
+export function CreateWizard() {
   const router = useRouter();
   const params = useSearchParams();
   const resumeId = params.get("case");
