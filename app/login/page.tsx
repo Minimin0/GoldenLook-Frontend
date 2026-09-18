@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, MailCheck } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -153,6 +154,11 @@ function LoginForm() {
       </form>
 
       <p className="mt-5 text-center text-[13px] leading-relaxed text-muted">
+        먼저 체험해 볼까요?{" "}
+        <Link className="font-semibold text-navy-700 underline underline-offset-2" href="/demo">
+          30초 체험하기
+        </Link>
+        <br />
         카카오·구글 로그인은 준비 중입니다. 지금은 이메일로만 가입할 수 있습니다.
       </p>
     </main>
