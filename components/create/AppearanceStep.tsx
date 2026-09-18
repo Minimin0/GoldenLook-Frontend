@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, X } from "lucide-react";
 import { ClothingField, TYPE_OPTIONS } from "@/components/create/ClothingField";
 import { ColorPicker } from "@/components/create/ColorPicker";
@@ -13,10 +13,12 @@ export function AppearanceStep({
   draft,
   onChange,
   missingColors,
+  onPendingItemChange,
 }: {
   draft: AppearanceDraft;
   onChange: (next: AppearanceDraft) => void;
   missingColors: RecolorablePart[];
+  onPendingItemChange?: (pending: boolean) => void;
 }) {
   const [itemDraft, setItemDraft] = useState("");
   const [itemColor, setItemColor] = useState<ColorId | null>(null);
@@ -25,11 +27,14 @@ export function AppearanceStep({
   const setPart = (key: RecolorablePart) => (part: GarmentDraft) =>
     onChange({ ...draft, [key]: part });
 
+  useEffect(() => () => onPendingItemChange?.(false), [onPendingItemChange]);
+
   const addItem = () => {
     const type = itemDraft.trim();
     if (!type || draft.items.length >= 5) return;
     onChange({ ...draft, items: [...draft.items, { type, color: itemColor }] });
     setItemDraft("");
+    onPendingItemChange?.(false);
     setItemColor(null);
     setColorOpen(false);
   };
@@ -92,7 +97,11 @@ export function AppearanceStep({
           <input
             className="h-11 flex-1 rounded-xl border border-line px-3 text-[15px] outline-none focus:border-navy-400"
             maxLength={60}
-            onChange={(event) => setItemDraft(event.target.value)}
+            onChange={(event) => {
+              const value = event.target.value;
+              setItemDraft(value);
+              onPendingItemChange?.(Boolean(value.trim()));
+            }}
             onKeyDown={(event) => {
               if (event.key === "Enter") {
                 event.preventDefault();

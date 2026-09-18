@@ -37,6 +37,7 @@ import { cn } from "@/lib/cn";
 import type { CaseDto, CasePatch, PhotoMode } from "@/lib/schemas";
 
 const STEPS = ["사진", "옷차림", "예상 모습", "전단 정보"];
+const PENDING_ITEM_BLOCKER = "입력한 소지품을 추가해 주세요.";
 
 const EMPTY_FORM: FlyerForm = {
   name: "",
@@ -86,7 +87,7 @@ function resumeStep(data: CaseDto) {
   return 1;
 }
 
-function CreateWizard() {
+export function CreateWizard() {
   const router = useRouter();
   const params = useSearchParams();
   const resumeId = params.get("case");
@@ -106,6 +107,7 @@ function CreateWizard() {
   const [body, setBody] = useState<BodyDraft>({ gender: "", bodyType: "" });
   const [appearance, setAppearance] = useState<AppearanceDraft>(EMPTY_APPEARANCE_DRAFT);
   const [missingColors, setMissingColors] = useState<RecolorablePart[]>([]);
+  const [hasPendingItem, setHasPendingItem] = useState(false);
 
   const [form, setForm] = useState<FlyerForm>(EMPTY_FORM);
   const [consent, setConsent] = useState(false);
@@ -357,7 +359,10 @@ function CreateWizard() {
       }
       return missing;
     }
-    if (step === 1) return missing;
+    if (step === 1) {
+      if (hasPendingItem) missing.push(PENDING_ITEM_BLOCKER);
+      return missing;
+    }
     if (step === 2) {
       if (!caseData?.generatedUrl) missing.push("예상 모습 만들기");
       return missing;
@@ -452,6 +457,7 @@ function CreateWizard() {
               setAppearance(next);
               setMissingColors([]);
             }}
+            onPendingItemChange={setHasPendingItem}
           />
         )}
 
@@ -508,10 +514,14 @@ function CreateWizard() {
             className="px-5 pt-2.5 text-[13px] font-semibold leading-snug text-navy-600"
             aria-live="polite"
           >
-            {blockers.join(", ")}
-            {step === 3
-              ? `${withParticle(blockers[blockers.length - 1], "을", "를")} 채우면 발행할 수 있습니다.`
-              : `${withParticle(blockers[blockers.length - 1], "이", "가")} 필요합니다.`}
+            {blockers.includes(PENDING_ITEM_BLOCKER)
+              ? PENDING_ITEM_BLOCKER
+              : blockers.join(", ")}
+            {blockers.includes(PENDING_ITEM_BLOCKER)
+              ? ""
+              : step === 3
+                ? `${withParticle(blockers[blockers.length - 1], "을", "를")} 채우면 발행할 수 있습니다.`
+                : `${withParticle(blockers[blockers.length - 1], "이", "가")} 필요합니다.`}
           </p>
         )}
         <div className="flex gap-2 px-5 pb-[max(12px,env(safe-area-inset-bottom))] pt-3">
