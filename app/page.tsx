@@ -43,21 +43,20 @@ export default function HomePage() {
             주변에 알리세요
           </h1>
           <p className="mt-2.5 text-[15px] leading-relaxed text-navy-600">
-            사진 한 장과 기억나는 옷차림만 있으면 됩니다. 실종 당시의 예상 모습을 AI 가 재현해 바로
-            공유할 수 있습니다.
+            사진을 올리고 실종 당시 옷차림을 고르면 AI가 예상 모습을 재현합니다. 완성된 전단은
+            링크로 바로 공유할 수 있습니다.
           </p>
 
           <div className="mt-5 flex flex-col gap-2">
-            <ButtonLink href="/create" variant="signal" size="lg" fullWidth>
-              전단 즉시 작성하기
+            <ButtonLink href="/demo" variant="signal" size="lg" fullWidth>
+              30초 체험하기
               <ArrowRight size={19} />
             </ButtonLink>
-            {/* 기획서 3장 플로우의 `synthetic 30초 체험`. 로그인 없이 열린다. */}
             <Link
-              href="/demo"
+              href={session ? "/create" : "/login?next=%2Fcreate"}
               className="flex h-12 items-center justify-center rounded-2xl bg-white/70 text-[15px] font-semibold text-navy-700 hover:bg-white"
             >
-              30초 만에 예시 전단 둘러보기
+              실제 전단 만들기
             </Link>
             <Link
               href={session ? "/my" : "/login"}
