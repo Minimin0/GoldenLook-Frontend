@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { LogIn, LogOut } from "lucide-react";
 import { signOut, useAuth } from "@/components/auth/AuthProvider";
+import { DEMO_AUTO_LOGIN } from "@/lib/demo-account";
 
 export function BrandMark({ size = 34 }: { size?: number }) {
   return (
@@ -26,7 +27,8 @@ export function AppHeader() {
         <span className="text-lg font-extrabold tracking-tight text-navy-800">Golden Look</span>
       </Link>
 
-      {configured && ready && session ? (
+      {/* 데모에서는 항상 로그인된 상태라 로그인·로그아웃 버튼을 두지 않는다. */}
+      {DEMO_AUTO_LOGIN ? null : configured && ready && session ? (
         <button
           className="flex h-10 items-center gap-1.5 rounded-full px-3 text-[13px] font-bold text-navy-700 hover:bg-navy-50"
           onClick={() => void signOut()}
