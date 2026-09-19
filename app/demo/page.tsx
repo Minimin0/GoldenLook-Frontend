@@ -20,6 +20,7 @@ import { AiPhoto } from "@/components/flyer/AiPhoto";
 import { AppearanceBox } from "@/components/flyer/AppearanceBox";
 import { ButtonLink } from "@/components/ui/Button";
 import { DEMO_APPEARANCE, DEMO_CASE } from "@/lib/demo";
+import { authedHref } from "@/lib/demo-account";
 import { formatDateTime, formatPhone } from "@/lib/format";
 
 /**
@@ -28,7 +29,7 @@ import { formatDateTime, formatPhone } from "@/lib/format";
  */
 export default function DemoPage() {
   const { session } = useAuth();
-  const createHref = session ? "/create" : "/login?next=%2Fcreate";
+  const createHref = authedHref("/create", Boolean(session));
 
   return (
     <>

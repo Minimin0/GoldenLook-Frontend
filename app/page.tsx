@@ -6,6 +6,7 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { ButtonLink } from "@/components/ui/Button";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { DEMO_AUTO_LOGIN, authedHref } from "@/lib/demo-account";
 import { AUTO_DELETE_NOTICE } from "@/lib/format";
 
 const FIRST_STEPS = [
@@ -53,16 +54,16 @@ export default function HomePage() {
               <ArrowRight size={19} />
             </ButtonLink>
             <Link
-              href={session ? "/create" : "/login?next=%2Fcreate"}
+              href={authedHref("/create", Boolean(session))}
               className="flex h-12 items-center justify-center rounded-2xl bg-white/70 text-[15px] font-semibold text-navy-700 hover:bg-white"
             >
               실제 전단 만들기
             </Link>
             <Link
-              href={session ? "/my" : "/login"}
+              href={authedHref("/my", Boolean(session))}
               className="text-center text-[14px] font-semibold text-navy-600 underline underline-offset-4"
             >
-              {session ? "내가 만든 전단 보기" : "로그인 / 회원가입"}
+              {session || DEMO_AUTO_LOGIN ? "내가 만든 전단 보기" : "로그인 / 회원가입"}
             </Link>
           </div>
         </section>
